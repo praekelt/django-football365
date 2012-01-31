@@ -2,6 +2,7 @@ import urllib2
 from lxml import etree
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from django.conf import settings
 
 from football365.models import Call
@@ -13,6 +14,7 @@ class Command(BaseCommand):
         'table': ('table_raw', 'xml2dom', 'table_structure')
     }
 
+    @transaction.commit_on_success
     def handle(self, *args, **options):
         for call in Call.objects.all():
             data = None
@@ -42,7 +44,7 @@ class Command(BaseCommand):
         return etree.fromstring(data)
 
     def table_raw(self, call, data):
-        return self._raw('tablesfeed', 'TablesFS1', call.football365_di)
+        return self._raw('tablesfeed', 'TablesFS1', call.football365_service_id)
 
     def table_structure(self, call, data):
         result = []

@@ -15,7 +15,7 @@ class Call(models.Model):
             ('live', 'Live scores')
         )
     )
-    football365_di = models.PositiveIntegerField(
+    football365_service_id = models.PositiveIntegerField(
         help_text="Internal service identifier used by Football365"
     )
 
