@@ -14,6 +14,7 @@ class Command(BaseCommand):
     pipeline = {
         'table': ('table_raw', 'xml2dom', 'table_structure'),
         'fixtures': ('fixtures_raw', 'xml2dom', 'fixtures_structure'),
+        'results': ('results_raw', 'xml2dom', 'results_structure'),
     }
 
     @transaction.commit_on_success
@@ -85,5 +86,21 @@ class Command(BaseCommand):
                     AWAYTEAM=row[1].text,
                     VENUE=row[2].text,
                     STARTTIME=starttime
+                ))
+        return result
+
+    def results_raw(self, call, data):
+        return self._raw('resultsfeed', 'Results', di=call.football365_service_id)
+
+    def results_structure(self, call, data):
+        result = []
+        for day in data.findall('DAY'):
+            for row in day[0][0][0].findall('MATCH'):
+                result.append(dict(
+                    HOMETEAM=row[0].text,
+                    AWAYTEAM=row[1].text,
+                    HOMETEAMSCORE=int(row[2].text),
+                    AWAYTEAMSCORE=int(row[3].text),
+                    DATE=datetime.datetime.strptime(day.get('DATE'), '%d/%m/%Y')
                 ))
         return result
