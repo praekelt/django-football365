@@ -76,15 +76,17 @@ class Command(BaseCommand):
             for row in day[0][0][0].findall('MATCH'):
 
                 # We want a UTC-0 time
-                raw_starttime = '%s %s' % (day.get('DATE'), row[3].text)                
+                raw_starttime = '%s %s' % (day.get('DATE'), row[5].text)
                 starttime = datetime.datetime.strptime(raw_starttime, '%d/%m/%Y %H:%M')
-                tz = int(row[3].get('TIMEZONE').replace('GMT', ''))
+                tz = int(row[5].get('TIMEZONE').replace('GMT', ''))
                 starttime = starttime - datetime.timedelta(hours=tz)
 
                 result.append(dict(
                     HOMETEAM=row[0].text,
-                    AWAYTEAM=row[1].text,
-                    VENUE=row[2].text,
+                    HOMETEAMCODE=row[1].text,
+                    AWAYTEAM=row[2].text,
+                    AWAYTEAMCODE=row[3].text,
+                    VENUE=row[4].text,
                     STARTTIME=starttime
                 ))
         return result
@@ -98,9 +100,11 @@ class Command(BaseCommand):
             for row in day[0][0][0].findall('MATCH'):
                 result.append(dict(
                     HOMETEAM=row[0].text,
-                    AWAYTEAM=row[1].text,
-                    HOMETEAMSCORE=int(row[2].text),
-                    AWAYTEAMSCORE=int(row[3].text),
+                    HOMETEAMCODE=row[1].text,
+                    AWAYTEAM=row[2].text,
+                    AWAYTEAMCODE=row[3].text,
+                    HOMETEAMSCORE=int(row[4].text),
+                    AWAYTEAMSCORE=int(row[5].text),
                     DATE=datetime.datetime.strptime(day.get('DATE'), '%d/%m/%Y')
                 ))
         return result
