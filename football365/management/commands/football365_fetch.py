@@ -15,7 +15,7 @@ class Command(BaseCommand):
         'table': ('table_raw', 'xml2dom', 'table_structure'),
         'fixtures': ('fixtures_raw', 'xml2dom', 'fixtures_structure'),
         'results': ('results_raw', 'xml2dom', 'results_structure'),
-        'live': ('live_raw', 'xml2dom'),
+        'live': ('live_raw', 'xml2dom', 'live_structure'),
     }
 
     @transaction.commit_on_success
@@ -118,3 +118,41 @@ class Command(BaseCommand):
     def live_raw(self, call, data):
         return self._raw('footballlive', ci=call.football365_service_id)
 
+    def live_structure(self, call, data):
+        result = []
+        for match in data.findall('.//MATCH'):
+
+            # We want a UTC-0 time
+            raw_starttime = '%s %s' % (match.get('FXDATE'), match.get('FXTIME'))
+            starttime = datetime.datetime.strptime(raw_starttime, '%Y-%m-%d %H:%M')
+            tz = int(match.get('TIMEZONE').replace('GMT', ''))
+            starttime = starttime - datetime.timedelta(hours=tz)
+
+            di = dict(
+                LIVE=match.get('live') == 'true',
+                DATE=starttime,
+                HOMETEAM=match.find('HOMETEAM').text,
+                HOMETEAMCODE=match.find('HOMETEAMCODE').text,
+                AWAYTEAM=match.find('AWAYTEAM').text,
+                AWAYTEAMCODE=match.find('AWAYTEAMCODE').text,
+                HOMETEAMSCORE=int(match.find('HOMETEAMSCORE').text),
+                AWAYTEAMSCORE=int(match.find('AWAYTEAMSCORE').text),
+                MATCHSTATUS=match.find('MATCHSTATUS').text, # xxx: translation issue here
+                HOMETEAMGOALS=[],
+                AWAYTEAMGOALS=[],
+                HOMETEAMCARDS=[],
+                AWAYTEAMCARDS=[]
+            )
+
+            for scorer in match.find('HOMETEAMGOALS').findall('SCORER'):
+                di['HOMETEAMGOALS'].append(scorer.text)
+            for scorer in match.find('AWAYTEAMGOALS').findall('SCORER'):
+                di['AWAYTEAMGOALS'].append(scorer.text)
+            for card in match.find('HOMETEAMCARDS').findall('CARD'):
+                di['HOMETEAMCARDS'].append(card.text)
+            for card in match.find('AWAYTEAMCARDS').findall('CARD'):
+                di['AWAYTEAMCARDS'].append(card.text)
+
+            result.append(di)
+
+        return result
