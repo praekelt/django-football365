@@ -15,6 +15,7 @@ class Command(BaseCommand):
         'table': ('table_raw', 'xml2dom', 'table_structure'),
         'fixtures': ('fixtures_raw', 'xml2dom', 'fixtures_structure'),
         'results': ('results_raw', 'xml2dom', 'results_structure'),
+        'live': ('live_raw', 'xml2dom'),
     }
 
     @transaction.commit_on_success
@@ -24,15 +25,20 @@ class Command(BaseCommand):
             for handler in self.pipeline[call.call_type]:
                 data = getattr(self, handler)(call, data)
     
-    def _raw(self, service, dt, di=None, ci=None):
+    def _raw(self, service, dt=None, di=None, ci=None):
         """Common method"""
-        url = "%s/%s?cl=%s&dt=%s&di=%s" % (
+        url = "%s/%s?cl=%s" % (
             settings.FOOTBALL365['url'],
             service,
             settings.FOOTBALL365['client_id'],
-            dt,
-            di or ci
         )
+        if dt:
+            url = url + "&dt=" + dt
+        if di:
+            url = url + "&di=" + str(di)
+        if ci:
+            url = url + "&ci=" + str(ci)
+
         result = ''
         try:
             f = urllib2.urlopen(url)
@@ -108,3 +114,7 @@ class Command(BaseCommand):
                     DATE=datetime.datetime.strptime(day.get('DATE'), '%d/%m/%Y')
                 ))
         return result
+
+    def live_raw(self, call, data):
+        return self._raw('footballlive', ci=call.football365_service_id)
+
