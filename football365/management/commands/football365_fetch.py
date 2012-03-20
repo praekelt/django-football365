@@ -22,7 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for call in Call.objects.all():
             data = None
-            for handler in self.pipeline[call.call_type]:
+            for handler in self.pipeline.get(call.call_type, []):
                 data = getattr(self, handler)(call, data)
     
     def _raw(self, service, dt=None, di=None, ci=None):
@@ -135,8 +135,8 @@ class Command(BaseCommand):
                 HOMETEAMCODE=match.find('HOMETEAMCODE').text,
                 AWAYTEAM=match.find('AWAYTEAM').text,
                 AWAYTEAMCODE=match.find('AWAYTEAMCODE').text,
-                HOMETEAMSCORE=int(match.find('HOMETEAMSCORE').text),
-                AWAYTEAMSCORE=int(match.find('AWAYTEAMSCORE').text),
+                HOMETEAMSCORE=int(match.find('HOMETEAMSCORE').text or 0),
+                AWAYTEAMSCORE=int(match.find('AWAYTEAMSCORE').text or 0),
                 MATCHSTATUS=match.find('MATCHSTATUS').text, # xxx: translation issue here
                 HOMETEAMGOALS=[],
                 AWAYTEAMGOALS=[],
