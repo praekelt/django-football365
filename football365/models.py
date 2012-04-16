@@ -19,6 +19,9 @@ class Call(models.Model):
         help_text="Internal service identifier used by Football365"
     )
 
+    class Meta:
+        ordering = ('title',)
+
     def __unicode__(self):
         return self.title
 
