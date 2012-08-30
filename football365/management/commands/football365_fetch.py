@@ -79,7 +79,7 @@ class Command(BaseCommand):
     def fixtures_structure(self, call, data):
         result = []
         for day in data.findall('DAY'):
-            for row in day[0][0][0].findall('MATCH'):
+            for row in day.findall('.//MATCH'):
 
                 # We want a UTC-0 time
                 raw_starttime = '%s %s' % (day.get('DATE'), row[5].text)
@@ -103,7 +103,7 @@ class Command(BaseCommand):
     def results_structure(self, call, data):
         result = []
         for day in data.findall('DAY'):
-            for row in day[0][0][0].findall('MATCH'):
+            for row in day.findall('.//MATCH'):
                 result.append(dict(
                     HOMETEAM=row[0].text,
                     HOMETEAMCODE=row[1].text,
