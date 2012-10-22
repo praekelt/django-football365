@@ -9,7 +9,8 @@ from django.conf import settings
 from football365.models import Call
 
 class Command(BaseCommand):
-    help = "Fetch feeds from Football365 and pass to handlers."
+    help = """Fetch feeds from Football365 and pass to handlers. Do not call 
+this command directly. It is intended to be subclassed."""
 
     pipeline = {
         'table': ('table_raw', 'xml2dom', 'table_structure'),
@@ -25,12 +26,12 @@ class Command(BaseCommand):
             for handler in self.pipeline.get(call.call_type, []):
                 data = getattr(self, handler)(call, data)
     
-    def _raw(self, service, dt=None, di=None, ci=None):
+    def _raw(self, service, dt=None, di=None, ci=None, client_id=None):
         """Common method"""
         url = "%s/%s?cl=%s" % (
             settings.FOOTBALL365['url'],
             service,
-            settings.FOOTBALL365['client_id'],
+            client_id or settings.FOOTBALL365['client_id'],
         )
         if dt:
             url = url + "&dt=" + dt
@@ -53,7 +54,10 @@ class Command(BaseCommand):
         return etree.fromstring(data)
 
     def table_raw(self, call, data):
-        return self._raw('tablesfeed', 'TablesFS1', di=call.football365_service_id)
+        return self._raw(
+            'tablesfeed', 'TablesFS1', di=call.football365_service_id, 
+            client_id=call.client_id
+        )
 
     def table_structure(self, call, data):
         result = []
@@ -74,7 +78,10 @@ class Command(BaseCommand):
         return result
 
     def fixtures_raw(self, call, data):
-        return self._raw('fixturesfeed', 'Fixtures', di=call.football365_service_id)
+        return self._raw(
+            'fixturesfeed', 'Fixtures', di=call.football365_service_id,
+             client_id=call.client_id
+        )
 
     def fixtures_structure(self, call, data):
         result = []
@@ -98,7 +105,10 @@ class Command(BaseCommand):
         return result
 
     def results_raw(self, call, data):
-        return self._raw('resultsfeed', 'Results', di=call.football365_service_id)
+        return self._raw(
+            'resultsfeed', 'Results', di=call.football365_service_id,
+             client_id=call.client_id
+        )
 
     def results_structure(self, call, data):
         result = []
@@ -116,7 +126,10 @@ class Command(BaseCommand):
         return result
 
     def live_raw(self, call, data):
-        return self._raw('footballlive', ci=call.football365_service_id)
+        return self._raw(
+            'footballlive', ci=call.football365_service_id,
+             client_id=call.client_id
+        )
 
     def live_structure(self, call, data):
         result = []
