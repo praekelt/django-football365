@@ -18,6 +18,12 @@ class Call(models.Model):
     football365_service_id = models.PositiveIntegerField(
         help_text="Internal service identifier used by Football365"
     )
+    client_id = models.CharField(
+        max_length=32,
+        null=True,
+        blank=True,
+        help_text="Override the account name in settings on a per-call basis"
+    )
 
     class Meta:
         ordering = ('title',)
