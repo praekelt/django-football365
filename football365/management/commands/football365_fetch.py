@@ -44,6 +44,8 @@ this command directly. It is intended to be subclassed."""
         try:
             f = urllib2.urlopen(url)
             result = f.read()
+	    # these characters should only appear in tag contents and need to be escaped
+            result = result.replace("&", "&amp;").replace("'", "&apos;")
             f.close()
         except urllib2.URLError:
             pass
