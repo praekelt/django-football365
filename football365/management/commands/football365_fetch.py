@@ -26,10 +26,10 @@ this command directly. It is intended to be subclassed."""
             for handler in self.pipeline.get(call.call_type, []):
                 data = getattr(self, handler)(call, data)
     
-    def _raw(self, service, dt=None, di=None, ci=None, client_id=None):
+    def _raw(self, service, dt=None, di=None, ci=None, client_id=None, url=None):
         """Common method"""
         url = "%s/%s?cl=%s" % (
-            settings.FOOTBALL365['url'],
+            url or settings.FOOTBALL365['url'],
             service,
             client_id or settings.FOOTBALL365['client_id'],
         )
@@ -58,7 +58,7 @@ this command directly. It is intended to be subclassed."""
     def table_raw(self, call, data):
         return self._raw(
             'tablesfeed', 'TablesFS1', di=call.football365_service_id, 
-            client_id=call.client_id
+            client_id=call.client_id, url=call.url
         )
 
     def table_structure(self, call, data):
@@ -82,7 +82,7 @@ this command directly. It is intended to be subclassed."""
     def fixtures_raw(self, call, data):
         return self._raw(
             'fixturesfeed', 'Fixtures', di=call.football365_service_id,
-             client_id=call.client_id
+             client_id=call.client_id, url=call.url
         )
 
     def fixtures_structure(self, call, data):
@@ -109,7 +109,7 @@ this command directly. It is intended to be subclassed."""
     def results_raw(self, call, data):
         return self._raw(
             'resultsfeed', 'Results', di=call.football365_service_id,
-             client_id=call.client_id
+             client_id=call.client_id, url=call.url
         )
 
     def results_structure(self, call, data):
@@ -130,7 +130,7 @@ this command directly. It is intended to be subclassed."""
     def live_raw(self, call, data):
         return self._raw(
             'footballlive', ci=call.football365_service_id,
-             client_id=call.client_id
+             client_id=call.client_id, url=call.url
         )
 
     def live_structure(self, call, data):
