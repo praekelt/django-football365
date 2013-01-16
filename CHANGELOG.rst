@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.2
+-----
+#. Allow url to be overridden per call.
+
 0.1.1
 -----
 #. Escape special XML characters. Teamtalk feeds aren't correctly escaped.
