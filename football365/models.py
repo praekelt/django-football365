@@ -24,6 +24,11 @@ class Call(models.Model):
         blank=True,
         help_text="Override the account name in settings on a per-call basis"
     )
+    url = models.URLField(
+        null=True,
+        blank=True,
+        help_text="Override the url in settings on a per-call basis"
+    )
 
     class Meta:
         ordering = ('title',)
