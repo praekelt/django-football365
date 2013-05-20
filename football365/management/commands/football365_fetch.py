@@ -1,4 +1,7 @@
 import urllib2
+import socket
+socket.setdefaulttimeout(30)
+
 import datetime
 from lxml import etree
 
@@ -42,7 +45,7 @@ this command directly. It is intended to be subclassed."""
 
         result = ''
         try:
-            f = urllib2.urlopen(url)
+            f = urllib2.urlopen(url, timeout=30)
             result = f.read()
 	    # these characters should only appear in tag contents and need to be escaped
             result = result.replace("&", "&amp;").replace("'", "&apos;")
