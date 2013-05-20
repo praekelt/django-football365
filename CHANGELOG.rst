@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.3
+-----
+#. Add timeout for `urlopen` in `football365_fetch` command. The prevents accumulation of long-running transactions.
+
 0.1.2
 -----
 #. Allow url to be overridden per call.
