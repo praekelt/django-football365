@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.2
+---
+#. Make `football365_fetch` command more robust by looking up XML nodes by tag name.
+#. Add tests. Check that feeds are being parsed correctly, and fields are populated with valid data.
+
 0.1.3
 -----
 #. Add timeout for `urlopen` in `football365_fetch` command. The prevents accumulation of long-running transactions.
