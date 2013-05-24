@@ -8,8 +8,9 @@ from django.conf import settings
 
 from football365.models import Call
 
+
 class Command(BaseCommand):
-    help = """Fetch feeds from Football365 and pass to handlers. Do not call 
+    help = """Fetch feeds from Football365 and pass to handlers. Do not call
 this command directly. It is intended to be subclassed."""
 
     pipeline = {
@@ -25,7 +26,7 @@ this command directly. It is intended to be subclassed."""
             data = None
             for handler in self.pipeline.get(call.call_type, []):
                 data = getattr(self, handler)(call, data)
-    
+
     def _raw(self, service, dt=None, di=None, ci=None, client_id=None, url=None):
         """Common method"""
         url = "%s/%s?cl=%s" % (
@@ -44,7 +45,7 @@ this command directly. It is intended to be subclassed."""
         try:
             f = urllib2.urlopen(url)
             result = f.read()
-	    # these characters should only appear in tag contents and need to be escaped
+            # these characters should only appear in tag contents and need to be escaped
             result = result.replace("&", "&amp;").replace("'", "&apos;")
             f.close()
         except urllib2.URLError:
@@ -57,7 +58,7 @@ this command directly. It is intended to be subclassed."""
 
     def table_raw(self, call, data):
         return self._raw(
-            'tablesfeed', 'TablesFS1', di=call.football365_service_id, 
+            'tablesfeed', 'TablesFS1', di=call.football365_service_id,
             client_id=call.client_id, url=call.url
         )
 
@@ -66,23 +67,23 @@ this command directly. It is intended to be subclassed."""
         for row in data.findall('ROW'):
             result.append(dict(
                 POSITION=int(row.get('POSITION')),
-                TEAM=row[0].text,
-                TEAMCODE=row[1].text,
-                PLAYED=int(row[2].text),
-                WON=int(row[3].text),
-                DRAWN=int(row[4].text),
-                LOST=int(row[5].text),
-                GOALSFOR=int(row[6].text),
-                GOALSAGAINST=int(row[7].text),
-                GOALDIFFERENCE=int(row[8].text),
-                POINTS=int(row[9].text),
+                TEAM=row.find('TEAM').text,
+                TEAMCODE=row.find('TEAMCODE').text,
+                PLAYED=int(row.find('PLAYED').text),
+                WON=int(row.find('WON').text),
+                DRAWN=int(row.find('DRAWN').text),
+                LOST=int(row.find('LOST').text),
+                GOALSFOR=int(row.find('GOALSFOR').text),
+                GOALSAGAINST=int(row.find('GOALSAGAINST').text),
+                GOALDIFFERENCE=int(row.find('GOALDIFFERENCE').text),
+                POINTS=int(row.find('POINTS').text),
             ))
         return result
 
     def fixtures_raw(self, call, data):
         return self._raw(
             'fixturesfeed', 'Fixtures', di=call.football365_service_id,
-             client_id=call.client_id, url=call.url
+            client_id=call.client_id, url=call.url
         )
 
     def fixtures_structure(self, call, data):
@@ -91,17 +92,17 @@ this command directly. It is intended to be subclassed."""
             for row in day.findall('.//MATCH'):
 
                 # We want a UTC-0 time
-                raw_starttime = '%s %s' % (day.get('DATE'), row[5].text)
+                raw_starttime = '%s %s' % (day.get('DATE'), row.find('STARTTIME').text)
                 starttime = datetime.datetime.strptime(raw_starttime, '%d/%m/%Y %H:%M')
-                tz = int(row[5].get('TIMEZONE').replace('GMT', ''))
+                tz = int(row.find('STARTTIME').get('TIMEZONE').replace('GMT', ''))
                 starttime = starttime - datetime.timedelta(hours=tz)
 
                 result.append(dict(
-                    HOMETEAM=row[0].text,
-                    HOMETEAMCODE=row[1].text,
-                    AWAYTEAM=row[2].text,
-                    AWAYTEAMCODE=row[3].text,
-                    VENUE=row[4].text,
+                    HOMETEAM=row.find('HOMETEAM').text,
+                    HOMETEAMCODE=row.find('HOMETEAMCODE').text,
+                    AWAYTEAM=row.find('AWAYTEAM').text,
+                    AWAYTEAMCODE=row.find('AWAYTEAMCODE').text,
+                    VENUE=row.find('VENUE').text,
                     STARTTIME=starttime
                 ))
         return result
@@ -117,12 +118,12 @@ this command directly. It is intended to be subclassed."""
         for day in data.findall('DAY'):
             for row in day.findall('.//MATCH'):
                 result.append(dict(
-                    HOMETEAM=row[0].text,
-                    HOMETEAMCODE=row[1].text,
-                    AWAYTEAM=row[2].text,
-                    AWAYTEAMCODE=row[3].text,
-                    HOMETEAMSCORE=int(row[4].text),
-                    AWAYTEAMSCORE=int(row[5].text),
+                    HOMETEAM=row.find('HOMETEAM').text,
+                    HOMETEAMCODE=row.find('HOMETEAMCODE').text,
+                    AWAYTEAM=row.find('AWAYTEAM').text,
+                    AWAYTEAMCODE=row.find('AWAYTEAMCODE').text,
+                    HOMETEAMSCORE=int(row.find('HOMETEAMSCORE').text),
+                    AWAYTEAMSCORE=int(row.find('AWAYTEAMSCORE').text),
                     DATE=datetime.datetime.strptime(day.get('DATE'), '%d/%m/%Y')
                 ))
         return result
@@ -130,7 +131,7 @@ this command directly. It is intended to be subclassed."""
     def live_raw(self, call, data):
         return self._raw(
             'footballlive', ci=call.football365_service_id,
-             client_id=call.client_id, url=call.url
+            client_id=call.client_id, url=call.url
         )
 
     def live_structure(self, call, data):
@@ -152,7 +153,7 @@ this command directly. It is intended to be subclassed."""
                 AWAYTEAMCODE=match.find('AWAYTEAMCODE').text,
                 HOMETEAMSCORE=int(match.find('HOMETEAMSCORE').text or 0),
                 AWAYTEAMSCORE=int(match.find('AWAYTEAMSCORE').text or 0),
-                MATCHSTATUS=match.find('MATCHSTATUS').text, # xxx: translation issue here
+                MATCHSTATUS=match.find('MATCHSTATUS').text,  # xxx: translation issue here
                 HOMETEAMGOALS=[],
                 AWAYTEAMGOALS=[],
                 HOMETEAMCARDS=[],
